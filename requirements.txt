@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+psycopg2
+SQLAlchemy
+python-dotenv
+passlib[argon2]
+pyjwt
