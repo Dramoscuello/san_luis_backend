@@ -12,7 +12,7 @@ class User(Base):
     cedula = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
     rol = Column(String, CheckConstraint("rol IN ('docente', 'coordinador', 'rector')"), nullable=False)
-    #sede_id = Column(Integer, ForeignKey('sedes.id', ondelete='SET NULL'), nullable=True)
+    sede_id = Column(Integer, ForeignKey('sedes.id', ondelete='SET NULL'), nullable=True)
     activo = Column(Boolean, nullable=False, default=True)
     telefono = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.now())

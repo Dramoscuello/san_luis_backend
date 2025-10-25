@@ -1,17 +1,22 @@
+import os
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 from typing import Annotated
 import jwt
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from app.schemas.user import TokenData
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth')
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
 
 class Auth:
-    SECRET_KEY = 'SANLUIS123'
-    ALGORITHM = 'HS256'
-    ACCESS_TOKEN_EXPIRE_MINUTES = 30
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    ALGORITHM = os.getenv('ALGORITHM')
+    ACCESS_TOKEN_EXPIRE_MINUTES = float(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
     @classmethod
     def create_access_token(cls, data: dict):

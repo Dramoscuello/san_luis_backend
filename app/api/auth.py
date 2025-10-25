@@ -9,9 +9,6 @@ from app.services.auth import Auth
 
 
 
-
-
-
 router = APIRouter(
     prefix='/auth',
     tags=['auth']
