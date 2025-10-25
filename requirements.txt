@@ -5,3 +5,4 @@ SQLAlchemy
 python-dotenv
 passlib[argon2]
 pyjwt
+python-multipart
