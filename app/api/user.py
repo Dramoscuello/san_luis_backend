@@ -4,7 +4,7 @@ from app.database.config import get_db
 from app.models.user import User as UserModel
 from typing import Annotated
 
-from app.schemas.user import User
+from app.schemas.user import User, UserResponse
 from app.services.auth import Auth
 
 router = APIRouter(
@@ -23,3 +23,10 @@ def create_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user
         return {'mensaje': 'Usuario creado correctamente'}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get('/{username}', status_code=200, response_model=UserResponse)
+def read_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)],username: str, db: Session = Depends(get_db)):
+    user = db.query(UserModel).filter(UserModel.cedula == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user

@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from app.schemas.user import TokenData
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='auth')
+
 env_path = Path('.') / '.env'
 load_dotenv(dotenv_path=env_path)
 
@@ -17,6 +17,7 @@ class Auth:
     SECRET_KEY = os.getenv('SECRET_KEY')
     ALGORITHM = os.getenv('ALGORITHM')
     ACCESS_TOKEN_EXPIRE_MINUTES = float(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
+    OAUTH2_SCHEME = OAuth2PasswordBearer(tokenUrl='auth')
 
     @classmethod
     def create_access_token(cls, data: dict):
@@ -28,7 +29,7 @@ class Auth:
 
 
     @classmethod
-    async def get_current_user(cls, token: Annotated[str, Depends(oauth2_scheme)]):
+    async def get_current_user(cls, token: Annotated[str, Depends(OAUTH2_SCHEME)]):
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",

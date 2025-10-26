@@ -1,3 +1,4 @@
+import jwt
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database.config import get_db
@@ -6,6 +7,7 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.schemas.user import Token
 from app.services.auth import Auth
+
 
 
 
@@ -28,3 +30,5 @@ def login(user:Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = De
 
     access_token = Auth.create_access_token(data={"sub": usuario.cedula})
     return Token(access_token=access_token, token_type="bearer")
+
+
