@@ -21,3 +21,13 @@ class SedesResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class UpdateSedes(BaseModel):
+    nombre : Optional[str] = None
+    codigo : Optional[str] = None
+    direccion : Optional[str] = None
+    active : Optional[bool] = None
+    updated_at : datetime = datetime.now()
+
+    class Config:
+        from_attributes = True
