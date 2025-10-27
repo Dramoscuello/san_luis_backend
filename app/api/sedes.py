@@ -30,5 +30,15 @@ def update_sedes(current_user: Annotated[UserModel, Depends(Auth.get_current_use
     sede_update.update(sede.model_dump(exclude_unset=True))
     db.commit()
 
-    return {'mensaje':'Sedes actualizada correctamente'}
+    return {'mensaje':'Sede actualizada correctamente'}
+
+@router.delete("/{sede_id}")
+def delete_sede(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], sede_id:int, db: Session = Depends(get_db)):
+    sede_delete = db.query(SedesModel).filter(SedesModel.id == sede_id)
+    if not sede_delete.first():
+        raise HTTPException(status_code=404, detail="Sedes not found")
+
+    sede_delete.delete(synchronize_session=False)
+    db.commit()
+    return {'mensaje':'Sede eliminada correctamente'}
 
