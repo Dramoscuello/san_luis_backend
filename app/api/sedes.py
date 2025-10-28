@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.database.config import get_db
 from typing import Annotated, List
 from app.models.user import User as UserModel
-from app.schemas.sedes import SedesResponse, UpdateSedes
+from app.schemas.sedes import SedesResponse, UpdateSedes, Sedes
 from app.models.sedes import Sedes as SedesModel
 from app.services.auth import Auth
 
@@ -41,4 +41,17 @@ def delete_sede(current_user: Annotated[UserModel, Depends(Auth.get_current_user
     sede_delete.delete(synchronize_session=False)
     db.commit()
     return {'mensaje':'Sede eliminada correctamente'}
+
+@router.post("/", response_model=SedesResponse)
+def create_sede(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], sede: Sedes, db: Session = Depends(get_db)):
+
+    sede_new = sede.model_dump()
+    sede_new = SedesModel(**sede_new)
+
+    db.add(sede_new)
+    db.commit()
+    db.refresh(sede_new)
+
+    return sede_new
+
 
