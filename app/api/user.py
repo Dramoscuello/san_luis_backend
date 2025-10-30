@@ -20,7 +20,10 @@ def create_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user
         db.add(usuario_new)
         db.commit()
         db.refresh(usuario_new)
-        return {'mensaje': 'Usuario creado correctamente'}
+        del usuario_new.password
+        del usuario_new.created_at
+        del usuario_new.updated_at
+        return usuario_new
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -70,3 +73,4 @@ def delete_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user
     usuario.delete(synchronize_session=False)
     db.commit()
     return {'mensaje': 'Usuario eliminado correctamente'}
+
