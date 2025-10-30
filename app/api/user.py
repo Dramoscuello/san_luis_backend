@@ -60,3 +60,13 @@ def update_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user
     user_update.update(user.model_dump(exclude_unset=True))
     db.commit()
     return {'mensaje': 'Usuario actualizado correctamente'}
+
+
+@router.delete("/{id}", status_code=200)
+def delete_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], id: int, db: Session = Depends(get_db)):
+    usuario = db.query(UserModel).filter(UserModel.id == id)
+    if not usuario.first():
+        raise HTTPException(status_code=404, detail="User not found")
+    usuario.delete(synchronize_session=False)
+    db.commit()
+    return {'mensaje': 'Usuario eliminado correctamente'}
