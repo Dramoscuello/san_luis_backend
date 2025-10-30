@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from sqlalchemy.orm import relationship
+
 from app.database.config import Base
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, CheckConstraint
 
@@ -17,4 +19,6 @@ class User(Base):
     telefono = Column(String, nullable=True)
     created_at = Column(DateTime, nullable=False, default=datetime.now())
     updated_at = Column(DateTime, nullable=False, default=datetime.now(), onupdate=datetime.now())
+
+    sede = relationship("Sedes")
 
