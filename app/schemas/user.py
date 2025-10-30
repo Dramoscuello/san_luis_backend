@@ -31,6 +31,7 @@ class UserUpdate(BaseModel):
     nombre_completo: Optional[str] = None
     cedula : Optional[str] = None
     password : Optional[str] = None
+    sede_id: Optional[int] = None
     activo : Optional[bool] = None
     telefono: Optional[str] = None
     updated_at : datetime = datetime.now()

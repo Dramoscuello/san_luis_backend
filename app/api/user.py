@@ -39,12 +39,13 @@ def get_usuarios(current_user: Annotated[UserModel, Depends(Auth.get_current_use
     resultado = [
         {
             "id": usuario.id,
-            "nombre": usuario.nombre_completo,
+            "nombre_completo": usuario.nombre_completo,
             "email": usuario.email,
             "cedula":usuario.cedula,
             "rol":usuario.rol,
             "telefono":usuario.telefono,
             "activo":usuario.activo,
+            "sede_id":usuario.sede_id,
             "sede_nombre": usuario.sede.nombre if usuario.sede else None
         }
         for usuario in usuarios
