@@ -13,7 +13,11 @@ class Settings:
     POSTGRES_DB:str = os.getenv("DB_POSTGRES")
     POSTGRES_HOST:str = os.getenv("HOST_POSTGRES")
     POSTGRES_PORT:str = os.getenv("PORT_POSTGRES", '5432')
-    URI:str = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
+    
+    # Priority to DATABASE_URL for Railway/Heroku
+    URI: str = os.getenv("DATABASE_URL")
+    if not URI and POSTGRES_HOST:
+        URI = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}'
 
 Settings = Settings()
     

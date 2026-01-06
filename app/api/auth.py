@@ -28,6 +28,9 @@ def login(user:Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = De
     if usuario.password != user.password:
         raise HTTPException(status_code=403, detail="Incorrect password")
 
+    if not usuario.activo:
+        raise HTTPException(status_code=403, detail="User not active")
+
     access_token = Auth.create_access_token(data={"sub": usuario.cedula})
     return Token(access_token=access_token, token_type="bearer")
 
