@@ -7,9 +7,10 @@ from app.api import auth
 from app.api import sedes
 from app.api import user
 from app.api import publicaciones
+from app.api import areas
 from app.database.config import Base, engine
 
-from app.models import Sedes, User, Publicacion
+from app.models import Sedes, User, Publicacion, Area
 
 
 def create_tables():
@@ -32,6 +33,7 @@ app.include_router(auth.router)
 app.include_router(sedes.router)
 app.include_router(user.router)
 app.include_router(publicaciones.router)
+app.include_router(areas.router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)

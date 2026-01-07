@@ -1,4 +1,4 @@
-from app.schemas.user import User, UserResponse, UserUpdate, Token, TokenData
+from app.schemas.user import User, UserResponse, UserUpdate, Token, TokenData, ChangePassword
 from app.schemas.sedes import Sedes, SedesResponse, UpdateSedes
 from app.schemas.publicaciones import (
     PublicacionCreate,
@@ -6,6 +6,7 @@ from app.schemas.publicaciones import (
     PublicacionResponse,
     AutorResponse,
 )
+from app.schemas.areas import AreaCreate, AreaUpdate, AreaResponse
 
 __all__ = [
     "User",
@@ -13,6 +14,7 @@ __all__ = [
     "UserUpdate",
     "Token",
     "TokenData",
+    "ChangePassword",
     "Sedes",
     "SedesResponse",
     "UpdateSedes",
@@ -20,4 +22,7 @@ __all__ = [
     "PublicacionUpdate",
     "PublicacionResponse",
     "AutorResponse",
+    "AreaCreate",
+    "AreaUpdate",
+    "AreaResponse",
 ]
