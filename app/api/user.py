@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from app.database.config import get_db
 from app.models.user import User as UserModel
+from app.models.grupos import Grupo as GrupoModel
 from typing import Annotated
 
 from app.schemas.user import User, UserResponse, UserUpdate, ChangePassword
@@ -41,7 +42,14 @@ def read_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)]
 
 @router.get("/all")
 def get_usuarios(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], db: Session = Depends(get_db)):
-    usuarios = db.query(UserModel).options(joinedload(UserModel.asignaturas)).filter(UserModel.id != current_user.id).all()
+    """Obtener listado de todos los DOCENTES."""
+    usuarios = db.query(UserModel).options(
+        joinedload(UserModel.asignaturas),
+        joinedload(UserModel.grupos_a_cargo).joinedload(GrupoModel.grado)
+    ).filter(
+        UserModel.rol == 'docente',
+        UserModel.id != current_user.id
+    ).all()
 
     resultado = [
         {
@@ -57,7 +65,40 @@ def get_usuarios(current_user: Annotated[UserModel, Depends(Auth.get_current_use
             "asignaturas": [
                 {"id": asig.id, "nombre": asig.nombre} 
                 for asig in usuario.asignaturas
+            ],
+            "grupos": [
+                {
+                    "id": grupo.id, 
+                    "nombre": grupo.nombre,
+                    "grado_nombre": grupo.grado.nombre if grupo.grado else ""
+                } 
+                for grupo in usuario.grupos_a_cargo
             ]
+        }
+        for usuario in usuarios
+    ]
+    return resultado
+
+
+@router.get("/directivos")
+def get_directivos(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], db: Session = Depends(get_db)):
+    """Obtener listado de Coordinadores y Rectores."""
+    usuarios = db.query(UserModel).filter(
+        UserModel.rol != 'docente',
+        UserModel.id != current_user.id
+    ).all()
+
+    resultado = [
+        {
+            "id": usuario.id,
+            "nombre_completo": usuario.nombre_completo,
+            "email": usuario.email,
+            "cedula": usuario.cedula,
+            "rol": usuario.rol,
+            "telefono": usuario.telefono,
+            "activo": usuario.activo,
+            "sede_id": usuario.sede_id,
+            "sede_nombre": usuario.sede.nombre if usuario.sede else None
         }
         for usuario in usuarios
     ]
