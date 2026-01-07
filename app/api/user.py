@@ -15,6 +15,10 @@ router = APIRouter(
 @router.post('/', status_code=200)
 def create_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], user: User, db: Session = Depends(get_db)):
     try:
+        # Validar que si es docente tenga sede asignada
+        if user.rol == "docente" and not user.sede_id:
+            raise HTTPException(status_code=400, detail="El docente debe tener una sede asignada")
+            
         usuario = user.model_dump()
         usuario_new = UserModel(**usuario)
         db.add(usuario_new)
@@ -37,7 +41,7 @@ def read_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)]
 
 @router.get("/all")
 def get_usuarios(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], db: Session = Depends(get_db)):
-    usuarios = db.query(UserModel).filter(UserModel.rol == "docente").all()
+    usuarios = db.query(UserModel).filter(UserModel.id != current_user.id).all()
 
     resultado = [
         {

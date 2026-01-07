@@ -21,6 +21,7 @@ class SedesResponse(BaseModel):
     telefono: Optional[str] = None
     activa : bool
     cantidad_grados: int = 0
+    cantidad_docentes: int = 0
 
     class Config:
         from_attributes = True

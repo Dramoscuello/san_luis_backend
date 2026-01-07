@@ -16,13 +16,20 @@ router = APIRouter(
 
 @router.get("/", response_model=List[SedesResponse])
 def read_sedes(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], db: Session = Depends(get_db)):
-    sedes = db.query(SedesModel).options(joinedload(SedesModel.grados)).all()
+    sedes = db.query(SedesModel).options(
+        joinedload(SedesModel.grados),
+        joinedload(SedesModel.usuarios)
+    ).all()
+    
     if not sedes:
         raise HTTPException(status_code=404, detail="Sedes not found")
     
-    # Agregar cantidad de grados a cada sede
+    # Agregar cantidades a cada sede
     result = []
     for sede in sedes:
+        # Calcular cantidad de docentes (filtrando por rol)
+        docentes_count = len([u for u in sede.usuarios if u.rol == 'docente']) if sede.usuarios else 0
+        
         sede_dict = {
             "id": sede.id,
             "nombre": sede.nombre,
@@ -30,7 +37,8 @@ def read_sedes(current_user: Annotated[UserModel, Depends(Auth.get_current_user)
             "direccion": sede.direccion,
             "telefono": sede.telefono,
             "activa": sede.activa,
-            "cantidad_grados": len(sede.grados) if sede.grados else 0
+            "cantidad_grados": len(sede.grados) if sede.grados else 0,
+            "cantidad_docentes": docentes_count
         }
         result.append(sede_dict)
     

@@ -9,7 +9,7 @@ class User(BaseModel):
     cedula :str
     password :str
     rol :str
-    sede_id : int
+    sede_id : Optional[int] = None
     activo : bool
     telefono : str
     created_at : datetime = datetime.now()
