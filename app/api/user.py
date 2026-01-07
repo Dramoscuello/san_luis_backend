@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database.config import get_db
 from app.models.user import User as UserModel
 from typing import Annotated
@@ -41,7 +41,7 @@ def read_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)]
 
 @router.get("/all")
 def get_usuarios(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], db: Session = Depends(get_db)):
-    usuarios = db.query(UserModel).filter(UserModel.id != current_user.id).all()
+    usuarios = db.query(UserModel).options(joinedload(UserModel.asignaturas)).filter(UserModel.id != current_user.id).all()
 
     resultado = [
         {
@@ -53,7 +53,11 @@ def get_usuarios(current_user: Annotated[UserModel, Depends(Auth.get_current_use
             "telefono":usuario.telefono,
             "activo":usuario.activo,
             "sede_id":usuario.sede_id,
-            "sede_nombre": usuario.sede.nombre if usuario.sede else None
+            "sede_nombre": usuario.sede.nombre if usuario.sede else None,
+            "asignaturas": [
+                {"id": asig.id, "nombre": asig.nombre} 
+                for asig in usuario.asignaturas
+            ]
         }
         for usuario in usuarios
     ]
@@ -93,10 +97,25 @@ def change_password(
 
 @router.patch("/{id}", status_code=200)
 def update_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], id: int, user:UserUpdate, db: Session = Depends(get_db)):
-    user_update = db.query(UserModel).filter(UserModel.id == id)
-    if not user_update.first():
+    user_db = db.query(UserModel).filter(UserModel.id == id).first()
+    if not user_db:
         raise HTTPException(status_code=404, detail="User not found")
-    user_update.update(user.model_dump(exclude_unset=True))
+        
+    datos = user.model_dump(exclude_unset=True)
+    
+    # Validaciones de cambio de rol
+    nuevo_rol = datos.get('rol', user_db.rol)
+    nueva_sede_id = datos.get('sede_id', user_db.sede_id)
+    
+    if nuevo_rol == 'docente' and not nueva_sede_id:
+        raise HTTPException(
+            status_code=400, 
+            detail="No se puede asignar rol de docente sin una sede. Por favor asigne una sede."
+        )
+    
+    for key, value in datos.items():
+        setattr(user_db, key, value)
+        
     db.commit()
     return {'mensaje': 'Usuario actualizado correctamente'}
 

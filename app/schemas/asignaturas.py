@@ -44,6 +44,7 @@ class AsignaturaResponse(BaseModel):
     activa: bool
     created_at: datetime
     updated_at: datetime
+    cantidad_docentes: int = 0
     
     # Relación anidada (opcional, se carga si se solicita)
     area: Optional[AreaResponse] = None

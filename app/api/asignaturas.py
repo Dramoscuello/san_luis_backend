@@ -35,13 +35,35 @@ def listar_asignaturas(
     Listar todas las asignaturas.
     - Se puede filtrar por área.
     """
-    query = db.query(AsignaturaModel).options(joinedload(AsignaturaModel.area))
+    query = db.query(AsignaturaModel).options(
+        joinedload(AsignaturaModel.area),
+        joinedload(AsignaturaModel.usuarios)
+    )
 
     if area_id:
         query = query.filter(AsignaturaModel.area_id == area_id)
 
+    asignaturas = query.order_by(AsignaturaModel.nombre).all()
+    
+    # Mapear respuesta incluyendo cantidad_docentes
+    result = []
+    for asig in asignaturas:
+        asig_dict = {
+            "id": asig.id,
+            "nombre": asig.nombre,
+            "area_id": asig.area_id,
+            "codigo": asig.codigo,
+            "descripcion": asig.descripcion,
+            "grados": asig.grados,
+            "activa": asig.activa,
+            "created_at": asig.created_at,
+            "updated_at": asig.updated_at,
+            "cantidad_docentes": len(asig.usuarios) if asig.usuarios else 0,
+            "area": asig.area
+        }
+        result.append(asig_dict)
 
-    return query.order_by(AsignaturaModel.nombre).all()
+    return result
 
 
 @router.get("/{asignatura_id}", response_model=AsignaturaResponse)
@@ -55,7 +77,10 @@ def obtener_asignatura(
     """
     asignatura = (
         db.query(AsignaturaModel)
-        .options(joinedload(AsignaturaModel.area))
+        .options(
+            joinedload(AsignaturaModel.area),
+            joinedload(AsignaturaModel.usuarios)
+        )
         .filter(AsignaturaModel.id == asignatura_id)
         .first()
     )
@@ -66,7 +91,19 @@ def obtener_asignatura(
             detail="Asignatura no encontrada"
         )
 
-    return asignatura
+    return {
+        "id": asignatura.id,
+        "nombre": asignatura.nombre,
+        "area_id": asignatura.area_id,
+        "codigo": asignatura.codigo,
+        "descripcion": asignatura.descripcion,
+        "grados": asignatura.grados,
+        "activa": asignatura.activa,
+        "created_at": asignatura.created_at,
+        "updated_at": asignatura.updated_at,
+        "cantidad_docentes": len(asignatura.usuarios) if asignatura.usuarios else 0,
+        "area": asignatura.area
+    }
 
 
 @router.post("/", response_model=AsignaturaResponse, status_code=status.HTTP_201_CREATED)
