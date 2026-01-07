@@ -8,6 +8,9 @@ from app.api import sedes
 from app.api import user
 from app.api import publicaciones
 from app.api import areas
+from app.api import asignaturas
+from app.api import grados
+from app.api import grupos
 from app.database.config import Base, engine
 
 from app.models import Sedes, User, Publicacion, Area
@@ -23,7 +26,7 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5174", os.getenv("FRONTEND_URL", "")],
+    allow_origins=["http://localhost:5173", os.getenv("FRONTEND_URL", "")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,6 +37,9 @@ app.include_router(sedes.router)
 app.include_router(user.router)
 app.include_router(publicaciones.router)
 app.include_router(areas.router)
+app.include_router(asignaturas.router)
+app.include_router(grados.router)
+app.include_router(grupos.router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
