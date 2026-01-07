@@ -6,9 +6,10 @@ import os
 from app.api import auth
 from app.api import sedes
 from app.api import user
+from app.api import publicaciones
 from app.database.config import Base, engine
 
-from app.models import Sedes, User
+from app.models import Sedes, User, Publicacion
 
 
 def create_tables():
@@ -21,7 +22,7 @@ app = FastAPI()
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", os.getenv("FRONTEND_URL", "")],
+    allow_origins=["http://localhost:5174", os.getenv("FRONTEND_URL", "")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,6 +31,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(sedes.router)
 app.include_router(user.router)
+app.include_router(publicaciones.router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
