@@ -7,6 +7,7 @@ from app.schemas.publicaciones import (
     AutorResponse,
 )
 from app.schemas.areas import AreaCreate, AreaUpdate, AreaResponse
+from app.schemas.periodos import PeriodoUpdate, PeriodoResponse
 
 __all__ = [
     "User",
@@ -25,4 +26,6 @@ __all__ = [
     "AreaCreate",
     "AreaUpdate",
     "AreaResponse",
+    "PeriodoUpdate",
+    "PeriodoResponse",
 ]

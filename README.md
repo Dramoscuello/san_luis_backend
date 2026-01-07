@@ -187,8 +187,39 @@ CREATE TABLE asignaturas (
     UNIQUE(nombre, area_id)
 );
 ```
-**Relaciones:** N:1 con `areas`, N:M con `usuarios` (docentes)  
-**Índices:** `idx_asignaturas_area`, `idx_asignaturas_activa`  
+**Relaciones:** N:1 con `areas`, N:M con `usuarios` (docentes)
+**Índices:** `idx_asignaturas_area`, `idx_asignaturas_activa`
+
+##### Tabla: `periodos`
+Períodos escolares del año académico. Por defecto son 4 períodos.
+```sql
+CREATE TABLE periodos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(10) NOT NULL UNIQUE,          -- "1", "2", "3", "4"
+    fecha_inicio DATE,
+    fecha_fin DATE,
+    activo BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Datos iniciales (se crean automáticamente)
+INSERT INTO periodos (nombre, activo) VALUES
+('1', FALSE),
+('2', FALSE),
+('3', FALSE),
+('4', FALSE);
+```
+**Características:**
+- Los 4 períodos se crean automáticamente al iniciar el sistema
+- Solo UN período puede estar activo a la vez
+- Al activar un período, los demás se desactivan automáticamente
+- Solo coordinadores y rector pueden activar/desactivar períodos
+- Los módulos (planeaciones, observadores, etc.) se asignan al período activo
+
+**Uso:** Cuando un docente crea una planeación, observación u otro registro, este se asocia al período que esté activo en ese momento.
+
+**Índices:** `idx_periodos_activo`, `idx_periodos_nombre`
 
 ---
 

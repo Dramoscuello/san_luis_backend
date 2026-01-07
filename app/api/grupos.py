@@ -36,7 +36,8 @@ def listar_grupos(
     """
     query = db.query(GrupoModel).options(
         joinedload(GrupoModel.grado),
-        joinedload(GrupoModel.estudiantes)
+        joinedload(GrupoModel.estudiantes),
+        joinedload(GrupoModel.directores)
     )
 
     if grado_id:
@@ -44,9 +45,12 @@ def listar_grupos(
 
     grupos = query.order_by(GrupoModel.grado_id, GrupoModel.nombre).all()
     
-    # Agregar cantidad de estudiantes a cada grupo
+    # Agregar cantidad de estudiantes y director a cada grupo
     result = []
     for grupo in grupos:
+        # Obtener nombre del director si existe
+        director_nombre = grupo.directores[0].nombre_completo if grupo.directores else None
+        
         grupo_dict = {
             "id": grupo.id,
             "grado_id": grupo.grado_id,
@@ -55,6 +59,7 @@ def listar_grupos(
             "created_at": grupo.created_at,
             "updated_at": grupo.updated_at,
             "cantidad_estudiantes": len(grupo.estudiantes) if grupo.estudiantes else 0,
+            "director_grupo": director_nombre,
             "grado": grupo.grado
         }
         result.append(grupo_dict)
@@ -73,7 +78,8 @@ def obtener_grupo(
         db.query(GrupoModel)
         .options(
             joinedload(GrupoModel.grado),
-            joinedload(GrupoModel.estudiantes)
+            joinedload(GrupoModel.estudiantes),
+            joinedload(GrupoModel.directores)
         )
         .filter(GrupoModel.id == grupo_id)
         .first()
@@ -81,6 +87,8 @@ def obtener_grupo(
 
     if not grupo:
         raise HTTPException(status_code=404, detail="Grupo no encontrado")
+
+    director_nombre = grupo.directores[0].nombre_completo if grupo.directores else None
 
     return {
         "id": grupo.id,
@@ -90,6 +98,7 @@ def obtener_grupo(
         "created_at": grupo.created_at,
         "updated_at": grupo.updated_at,
         "cantidad_estudiantes": len(grupo.estudiantes) if grupo.estudiantes else 0,
+        "director_grupo": director_nombre,
         "grado": grupo.grado
     }
 

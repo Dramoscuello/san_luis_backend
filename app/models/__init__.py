@@ -8,5 +8,6 @@ from app.models.grados import Grado
 from app.models.grupos import Grupo
 from app.models.docente_grupos import DocenteGrupo
 from app.models.estudiantes import Estudiante
+from app.models.periodos import Periodo
 
-__all__ = ["Sedes", "User", "Publicacion", "Area", "Asignatura", "DocenteAsignatura", "Grado", "Grupo", "DocenteGrupo", "Estudiante"]
+__all__ = ["Sedes", "User", "Publicacion", "Area", "Asignatura", "DocenteAsignatura", "Grado", "Grupo", "DocenteGrupo", "Estudiante", "Periodo"]
