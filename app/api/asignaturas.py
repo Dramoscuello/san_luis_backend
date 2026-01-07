@@ -29,21 +29,17 @@ ROLES_ADMIN = ["coordinador", "rector"]
 def listar_asignaturas(
     current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
     db: Session = Depends(get_db),
-    area_id: Optional[int] = Query(None, description="Filtrar por ID de área"),
-    activa: Optional[bool] = Query(True, description="Filtrar por estado activo"),
+    area_id: Optional[int] = Query(None, description="Filtrar por ID de área")
 ):
     """
     Listar todas las asignaturas.
     - Se puede filtrar por área.
-    - Por defecto solo trae las activas.
     """
     query = db.query(AsignaturaModel).options(joinedload(AsignaturaModel.area))
 
     if area_id:
         query = query.filter(AsignaturaModel.area_id == area_id)
-    
-    if activa is not None:
-        query = query.filter(AsignaturaModel.activa == activa)
+
 
     return query.order_by(AsignaturaModel.nombre).all()
 

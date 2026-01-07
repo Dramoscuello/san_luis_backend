@@ -20,6 +20,7 @@ class SedesResponse(BaseModel):
     direccion :str
     telefono: Optional[str] = None
     activa : bool
+    cantidad_grados: int = 0
 
     class Config:
         from_attributes = True

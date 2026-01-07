@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database.config import get_db
 from typing import Annotated, List
 from app.models.user import User as UserModel
@@ -16,10 +16,25 @@ router = APIRouter(
 
 @router.get("/", response_model=List[SedesResponse])
 def read_sedes(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], db: Session = Depends(get_db)):
-    sedes  = db.query(SedesModel).all()
+    sedes = db.query(SedesModel).options(joinedload(SedesModel.grados)).all()
     if not sedes:
         raise HTTPException(status_code=404, detail="Sedes not found")
-    return sedes
+    
+    # Agregar cantidad de grados a cada sede
+    result = []
+    for sede in sedes:
+        sede_dict = {
+            "id": sede.id,
+            "nombre": sede.nombre,
+            "codigo": sede.codigo,
+            "direccion": sede.direccion,
+            "telefono": sede.telefono,
+            "activa": sede.activa,
+            "cantidad_grados": len(sede.grados) if sede.grados else 0
+        }
+        result.append(sede_dict)
+    
+    return result
 
 @router.patch("/{sede_id}")
 def update_sedes(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], sede_id:int, sede:UpdateSedes, db: Session = Depends(get_db)):

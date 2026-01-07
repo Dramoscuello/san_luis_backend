@@ -32,12 +32,32 @@ def listar_grados(
     Listar grados.
     Puede filtrar por sede.
     """
-    query = db.query(GradoModel).options(joinedload(GradoModel.sede))
+    query = db.query(GradoModel).options(
+        joinedload(GradoModel.sede),
+        joinedload(GradoModel.grupos)
+    )
 
     if sede_id:
         query = query.filter(GradoModel.sede_id == sede_id)
 
-    return query.order_by(GradoModel.sede_id, GradoModel.nombre).all()
+    grados = query.order_by(GradoModel.sede_id, GradoModel.nombre).all()
+    
+    # Agregar cantidad de grupos a cada grado
+    result = []
+    for grado in grados:
+        grado_dict = {
+            "id": grado.id,
+            "sede_id": grado.sede_id,
+            "nombre": grado.nombre,
+            "codigo": grado.codigo,
+            "created_at": grado.created_at,
+            "updated_at": grado.updated_at,
+            "cantidad_grupos": len(grado.grupos) if grado.grupos else 0,
+            "sede": grado.sede
+        }
+        result.append(grado_dict)
+    
+    return result
 
 
 @router.get("/{grado_id}", response_model=GradoResponse)
@@ -51,7 +71,10 @@ def obtener_grado(
     """
     grado = (
         db.query(GradoModel)
-        .options(joinedload(GradoModel.sede))
+        .options(
+            joinedload(GradoModel.sede),
+            joinedload(GradoModel.grupos)
+        )
         .filter(GradoModel.id == grado_id)
         .first()
     )
@@ -59,7 +82,16 @@ def obtener_grado(
     if not grado:
         raise HTTPException(status_code=404, detail="Grado no encontrado")
 
-    return grado
+    return {
+        "id": grado.id,
+        "sede_id": grado.sede_id,
+        "nombre": grado.nombre,
+        "codigo": grado.codigo,
+        "created_at": grado.created_at,
+        "updated_at": grado.updated_at,
+        "cantidad_grupos": len(grado.grupos) if grado.grupos else 0,
+        "sede": grado.sede
+    }
 
 
 @router.post("/", response_model=GradoResponse, status_code=status.HTTP_201_CREATED)
