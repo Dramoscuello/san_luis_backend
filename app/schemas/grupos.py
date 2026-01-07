@@ -35,6 +35,7 @@ class GrupoResponse(BaseModel):
     codigo: Optional[str] = None
     created_at: datetime
     updated_at: datetime
+    cantidad_estudiantes: int = 0
     
     # Campo anidado opcional
     grado: Optional[GradoResponse] = None

@@ -34,12 +34,32 @@ def listar_grupos(
     Listar grupos.
     Puede filtrar por grado.
     """
-    query = db.query(GrupoModel).options(joinedload(GrupoModel.grado))
+    query = db.query(GrupoModel).options(
+        joinedload(GrupoModel.grado),
+        joinedload(GrupoModel.estudiantes)
+    )
 
     if grado_id:
         query = query.filter(GrupoModel.grado_id == grado_id)
 
-    return query.order_by(GrupoModel.grado_id, GrupoModel.nombre).all()
+    grupos = query.order_by(GrupoModel.grado_id, GrupoModel.nombre).all()
+    
+    # Agregar cantidad de estudiantes a cada grupo
+    result = []
+    for grupo in grupos:
+        grupo_dict = {
+            "id": grupo.id,
+            "grado_id": grupo.grado_id,
+            "nombre": grupo.nombre,
+            "codigo": grupo.codigo,
+            "created_at": grupo.created_at,
+            "updated_at": grupo.updated_at,
+            "cantidad_estudiantes": len(grupo.estudiantes) if grupo.estudiantes else 0,
+            "grado": grupo.grado
+        }
+        result.append(grupo_dict)
+    
+    return result
 
 
 @router.get("/{grupo_id}", response_model=GrupoResponse)
@@ -51,7 +71,10 @@ def obtener_grupo(
     """Obtener grupo por ID."""
     grupo = (
         db.query(GrupoModel)
-        .options(joinedload(GrupoModel.grado))
+        .options(
+            joinedload(GrupoModel.grado),
+            joinedload(GrupoModel.estudiantes)
+        )
         .filter(GrupoModel.id == grupo_id)
         .first()
     )
@@ -59,7 +82,16 @@ def obtener_grupo(
     if not grupo:
         raise HTTPException(status_code=404, detail="Grupo no encontrado")
 
-    return grupo
+    return {
+        "id": grupo.id,
+        "grado_id": grupo.grado_id,
+        "nombre": grupo.nombre,
+        "codigo": grupo.codigo,
+        "created_at": grupo.created_at,
+        "updated_at": grupo.updated_at,
+        "cantidad_estudiantes": len(grupo.estudiantes) if grupo.estudiantes else 0,
+        "grado": grupo.grado
+    }
 
 
 @router.post("/", response_model=GrupoResponse, status_code=status.HTTP_201_CREATED)

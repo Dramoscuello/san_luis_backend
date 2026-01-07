@@ -33,5 +33,6 @@ class Grupo(Base):
     # Directores de grupo (Docentes)
     directores = relationship("User", secondary="docente_grupos", back_populates="grupos_a_cargo")
     
-    # Estudiantes (se definirá cuando exista el modelo Estudiante)
-    # estudiantes = relationship("Estudiante", back_populates="grupo")
+    # Estudiantes del grupo
+    estudiantes = relationship("Estudiante", back_populates="grupo")
+
