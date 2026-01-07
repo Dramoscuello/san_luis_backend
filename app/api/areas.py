@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database.config import get_db
 from typing import Annotated, List
 from app.models.user import User as UserModel
@@ -19,10 +19,25 @@ def get_areas(
     current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
     db: Session = Depends(get_db),
 ):
-    areas = db.query(AreaModel).all()
+    areas = db.query(AreaModel).options(joinedload(AreaModel.asignaturas)).all()
     if not areas:
         raise HTTPException(status_code=404, detail="No se encontraron áreas")
-    return areas
+    
+    # Agregar cantidad de asignaturas a cada área
+    result = []
+    for area in areas:
+        area_dict = {
+            "id": area.id,
+            "nombre": area.nombre,
+            "descripcion": area.descripcion,
+            "activa": area.activa,
+            "created_at": area.created_at,
+            "updated_at": area.updated_at,
+            "cantidad_asignaturas": len(area.asignaturas) if area.asignaturas else 0
+        }
+        result.append(area_dict)
+    
+    return result
 
 
 @router.get("/{area_id}", response_model=AreaResponse)
@@ -31,10 +46,19 @@ def get_area(
     current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
     db: Session = Depends(get_db),
 ):
-    area = db.query(AreaModel).filter(AreaModel.id == area_id).first()
+    area = db.query(AreaModel).options(joinedload(AreaModel.asignaturas)).filter(AreaModel.id == area_id).first()
     if not area:
         raise HTTPException(status_code=404, detail="Área no encontrada")
-    return area
+    
+    return {
+        "id": area.id,
+        "nombre": area.nombre,
+        "descripcion": area.descripcion,
+        "activa": area.activa,
+        "created_at": area.created_at,
+        "updated_at": area.updated_at,
+        "cantidad_asignaturas": len(area.asignaturas) if area.asignaturas else 0
+    }
 
 
 @router.post("/", response_model=AreaResponse, status_code=201)

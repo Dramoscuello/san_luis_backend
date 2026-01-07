@@ -33,6 +33,7 @@ class AreaResponse(BaseModel):
     activa: bool
     created_at: datetime
     updated_at: datetime
+    cantidad_asignaturas: int = 0
 
     class Config:
         from_attributes = True
