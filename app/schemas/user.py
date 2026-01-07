@@ -46,3 +46,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     cedula: str | None = None
+
+
+class ChangePassword(BaseModel):
+    password_actual: str
+    password_nuevo: str

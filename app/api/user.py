@@ -4,7 +4,7 @@ from app.database.config import get_db
 from app.models.user import User as UserModel
 from typing import Annotated
 
-from app.schemas.user import User, UserResponse, UserUpdate
+from app.schemas.user import User, UserResponse, UserUpdate, ChangePassword
 from app.services.auth import Auth
 
 router = APIRouter(
@@ -55,6 +55,38 @@ def get_usuarios(current_user: Annotated[UserModel, Depends(Auth.get_current_use
     ]
     return resultado
 
+
+@router.post("/change-password", status_code=200)
+def change_password(
+    current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
+    passwords: ChangePassword,
+    db: Session = Depends(get_db),
+):
+    """
+    Cambiar contraseña del usuario autenticado.
+    Requiere la contraseña actual para validar.
+    """
+    # Verificar que la contraseña actual sea correcta
+    if current_user.password != passwords.password_actual:
+        raise HTTPException(
+            status_code=400,
+            detail="La contraseña actual es incorrecta"
+        )
+
+    # Verificar que la nueva contraseña sea diferente
+    if passwords.password_actual == passwords.password_nuevo:
+        raise HTTPException(
+            status_code=400,
+            detail="La nueva contraseña debe ser diferente a la actual"
+        )
+
+    # Actualizar contraseña
+    current_user.password = passwords.password_nuevo
+    db.commit()
+
+    return {'mensaje': 'Contraseña actualizada correctamente'}
+
+
 @router.patch("/{id}", status_code=200)
 def update_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], id: int, user:UserUpdate, db: Session = Depends(get_db)):
     user_update = db.query(UserModel).filter(UserModel.id == id)
@@ -73,4 +105,3 @@ def delete_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user
     usuario.delete(synchronize_session=False)
     db.commit()
     return {'mensaje': 'Usuario eliminado correctamente'}
-
