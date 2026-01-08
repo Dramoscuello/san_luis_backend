@@ -1,7 +1,17 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
+
+
+class AsignaturaSimple(BaseModel):
+    """Schema simple para asignaturas en respuesta de usuario."""
+    id: int
+    nombre: str
+
+    class Config:
+        from_attributes = True
+
 
 class User(BaseModel):
     email: str
@@ -16,12 +26,15 @@ class User(BaseModel):
     updated_at : datetime = datetime.now()
 
 class UserResponse(BaseModel):
+    id: int
     email: str
     nombre_completo: str
-    cedula : str
+    cedula: str
     rol: str
     activo: bool
     telefono: str
+    sede_id: Optional[int] = None
+    asignaturas: List[AsignaturaSimple] = []
 
     class Config:
         from_attributes = True

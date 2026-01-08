@@ -9,5 +9,12 @@ from app.models.grupos import Grupo
 from app.models.docente_grupos import DocenteGrupo
 from app.models.estudiantes import Estudiante
 from app.models.periodos import Periodo
+from app.models.planeaciones import Planeacion
+from app.models.comentarios import Comentario
+from app.models.planeaciones_destacadas import PlaneacionDestacada
 
-__all__ = ["Sedes", "User", "Publicacion", "Area", "Asignatura", "DocenteAsignatura", "Grado", "Grupo", "DocenteGrupo", "Estudiante", "Periodo"]
+__all__ = [
+    "Sedes", "User", "Publicacion", "Area", "Asignatura", "DocenteAsignatura",
+    "Grado", "Grupo", "DocenteGrupo", "Estudiante", "Periodo",
+    "Planeacion", "Comentario", "PlaneacionDestacada"
+]

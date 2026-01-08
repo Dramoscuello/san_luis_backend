@@ -34,7 +34,9 @@ def create_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user
 
 @router.get('/whoami/{username}', status_code=200, response_model=UserResponse)
 def read_user(current_user: Annotated[UserModel, Depends(Auth.get_current_user)],username: str, db: Session = Depends(get_db)):
-    user = db.query(UserModel).filter(UserModel.cedula == username).first()
+    user = db.query(UserModel).options(
+        joinedload(UserModel.asignaturas)
+    ).filter(UserModel.cedula == username).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user

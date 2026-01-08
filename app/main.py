@@ -13,9 +13,12 @@ from app.api import grados
 from app.api import grupos
 from app.api import estudiantes
 from app.api import periodos
+from app.api import planeaciones
+from app.api import comentarios
+from app.api import planeaciones_destacadas
 from app.database.config import Base, engine
 
-from app.models import Sedes, User, Publicacion, Area, Estudiante, Periodo
+from app.models import Sedes, User, Publicacion, Area, Estudiante, Periodo, Planeacion, Comentario, PlaneacionDestacada
 
 
 def create_tables():
@@ -44,6 +47,9 @@ app.include_router(grados.router)
 app.include_router(grupos.router)
 app.include_router(estudiantes.router)
 app.include_router(periodos.router)
+app.include_router(planeaciones.router)
+app.include_router(comentarios.router)
+app.include_router(planeaciones_destacadas.router)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
