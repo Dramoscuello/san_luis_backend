@@ -51,7 +51,7 @@ def listar_planeaciones_destacadas(
     if solo_activas:
         query = query.filter(PlaneacionDestacadaModel.activa == True)
 
-    destacadas = query.order_by(PlaneacionDestacadaModel.visualizaciones.desc()).all()
+    destacadas = query.order_by(PlaneacionDestacadaModel.fecha_destacado.desc()).all()
 
     # Transformar a schema con detalle
     resultado = []

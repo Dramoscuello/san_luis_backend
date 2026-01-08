@@ -12,9 +12,13 @@ from app.models.periodos import Periodo
 from app.models.planeaciones import Planeacion
 from app.models.comentarios import Comentario
 from app.models.planeaciones_destacadas import PlaneacionDestacada
+from app.models.proyectos import Proyecto
+from app.models.evidencias_proyecto import EvidenciaProyecto
+from app.models.comentarios_proyecto import ComentarioProyecto
 
 __all__ = [
     "Sedes", "User", "Publicacion", "Area", "Asignatura", "DocenteAsignatura",
     "Grado", "Grupo", "DocenteGrupo", "Estudiante", "Periodo",
-    "Planeacion", "Comentario", "PlaneacionDestacada"
+    "Planeacion", "Comentario", "PlaneacionDestacada",
+    "Proyecto", "EvidenciaProyecto", "ComentarioProyecto"
 ]
