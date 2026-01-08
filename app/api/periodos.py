@@ -59,7 +59,8 @@ def update_periodo(
     """
     Actualizar un período (fechas, activar/desactivar).
     Solo coordinadores y rector pueden modificar períodos.
-    Al activar un período, se desactivan automáticamente los demás.
+    Solo puede haber un período activo a la vez. Si se intenta activar
+    un período cuando ya hay otro activo, se retorna error 400.
     """
     # Solo coordinadores y rector pueden modificar períodos
     if current_user.rol not in ["coordinador", "rector"]:
@@ -74,9 +75,18 @@ def update_periodo(
 
     datos = periodo.model_dump(exclude_unset=True)
 
-    # Si se está activando este período, desactivar los demás
+    # Si se está activando este período, verificar que no haya otro activo
     if datos.get('activo') == True:
-        db.query(PeriodoModel).filter(PeriodoModel.id != periodo_id).update({'activo': False})
+        periodo_activo = db.query(PeriodoModel).filter(
+            PeriodoModel.activo == True,
+            PeriodoModel.id != periodo_id
+        ).first()
+        if periodo_activo:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ya existe un período activo (Período {periodo_activo.nombre}). "
+                       "Debe desactivarlo antes de activar otro."
+            )
 
     # Actualizar campos
     for key, value in datos.items():

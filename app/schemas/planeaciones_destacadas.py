@@ -34,7 +34,7 @@ class PlaneacionDestacadaCreate(BaseModel):
 
 
 class PlaneacionDestacadaUpdate(BaseModel):
-    """Schema para actualizar una planeación destacada."""
+    """Schema para actualizar una planeación destacada (solo coordinador/rector)."""
     razon: Optional[str] = Field(None, min_length=20, description="Nueva razón")
     activa: Optional[bool] = None
 

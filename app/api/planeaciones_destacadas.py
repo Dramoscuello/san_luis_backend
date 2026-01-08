@@ -78,64 +78,6 @@ def listar_planeaciones_destacadas(
     return resultado
 
 
-@router.get("/{destacada_id}", response_model=PlaneacionDestacadaConDetalle)
-def obtener_planeacion_destacada(
-    destacada_id: int,
-    current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
-    db: Session = Depends(get_db),
-    incrementar_visualizacion: bool = Query(True, description="Incrementar contador de visualizaciones"),
-):
-    """
-    Obtener una planeación destacada por ID.
-
-    Por defecto incrementa el contador de visualizaciones.
-    """
-    destacada = (
-        db.query(PlaneacionDestacadaModel)
-        .options(
-            joinedload(PlaneacionDestacadaModel.coordinador),
-            joinedload(PlaneacionDestacadaModel.planeacion)
-            .joinedload(PlaneacionModel.docente),
-            joinedload(PlaneacionDestacadaModel.planeacion)
-            .joinedload(PlaneacionModel.asignatura),
-            joinedload(PlaneacionDestacadaModel.planeacion)
-            .joinedload(PlaneacionModel.sede),
-        )
-        .filter(PlaneacionDestacadaModel.id == destacada_id)
-        .first()
-    )
-
-    if not destacada:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Planeación destacada no encontrada",
-        )
-
-    # Incrementar visualizaciones
-    if incrementar_visualizacion:
-        destacada.visualizaciones += 1
-        db.commit()
-        db.refresh(destacada)
-
-    return PlaneacionDestacadaConDetalle(
-        id=destacada.id,
-        planeacion_id=destacada.planeacion_id,
-        coordinador_id=destacada.coordinador_id,
-        razon=destacada.razon,
-        activa=destacada.activa,
-        visualizaciones=destacada.visualizaciones,
-        fecha_destacado=destacada.fecha_destacado,
-        created_at=destacada.created_at,
-        coordinador=destacada.coordinador,
-        planeacion_titulo=destacada.planeacion.titulo if destacada.planeacion else None,
-        planeacion_archivo=destacada.planeacion.nombre_archivo_original if destacada.planeacion else None,
-        planeacion_drive_view_link=destacada.planeacion.drive_view_link if destacada.planeacion else None,
-        docente_nombre=destacada.planeacion.docente.nombre_completo if destacada.planeacion and destacada.planeacion.docente else None,
-        asignatura_nombre=destacada.planeacion.asignatura.nombre if destacada.planeacion and destacada.planeacion.asignatura else None,
-        sede_nombre=destacada.planeacion.sede.nombre if destacada.planeacion and destacada.planeacion.sede else None,
-    )
-
-
 @router.post("/", response_model=PlaneacionDestacadaResponse, status_code=status.HTTP_201_CREATED)
 def destacar_planeacion(
     destacada_data: PlaneacionDestacadaCreate,
@@ -240,6 +182,39 @@ def actualizar_planeacion_destacada(
 
     if destacada_data.activa is not None:
         destacada_db.activa = destacada_data.activa
+
+    db.commit()
+    db.refresh(destacada_db, ["coordinador"])
+
+    return destacada_db
+
+
+@router.patch("/{destacada_id}/visualizaciones", response_model=PlaneacionDestacadaResponse)
+def incrementar_visualizaciones(
+    destacada_id: int,
+    current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
+    db: Session = Depends(get_db),
+):
+    """
+    Incrementar el número de visualizaciones de una planeación destacada.
+
+    Incrementa +1 las visualizaciones automáticamente.
+    Cualquier usuario autenticado puede incrementar las visualizaciones.
+    """
+    destacada_db = (
+        db.query(PlaneacionDestacadaModel)
+        .filter(PlaneacionDestacadaModel.id == destacada_id)
+        .first()
+    )
+
+    if not destacada_db:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Planeación destacada no encontrada",
+        )
+
+    # Incrementar visualizaciones en +1
+    destacada_db.visualizaciones += 1
 
     db.commit()
     db.refresh(destacada_db, ["coordinador"])
