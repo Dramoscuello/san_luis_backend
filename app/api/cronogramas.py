@@ -109,6 +109,42 @@ def mi_cronograma_detalle(
         
     return cronograma
 
+@router.get("/docente/{docente_id}", response_model=CronogramaDetailResponse)
+def cronograma_por_docente(
+    docente_id: int,
+    current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
+    anio: Optional[int] = Query(None),
+    db: Session = Depends(get_db),
+):
+    """
+    Obtiene el cronograma detallado de un docente específico.
+    Solo permitido para coordinadores y rector.
+    """
+    if current_user.rol not in ["coordinador", "rector"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tienes permisos para consultar cronogramas de otros docentes"
+        )
+
+    if not anio:
+        anio = datetime.now().year
+
+    cronograma = db.query(Cronograma).options(
+        joinedload(Cronograma.actividades).joinedload(ActividadCronograma.evidencias),
+        joinedload(Cronograma.docente)
+    ).filter(
+        Cronograma.docente_id == docente_id,
+        Cronograma.anio_escolar == anio
+    ).first()
+
+    if not cronograma:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"El docente no ha creado un cronograma para el año {anio}"
+        )
+
+    return cronograma
+
 @router.get("/{id}", response_model=CronogramaDetailResponse)
 def ver_cronograma_detalle(
     id: int,
