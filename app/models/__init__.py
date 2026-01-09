@@ -17,9 +17,12 @@ from app.models.evidencias_proyecto import EvidenciaProyecto
 from app.models.comentarios_proyecto import ComentarioProyecto
 from app.models.observadores import Observador
 
+from app.models.cronogramas import Cronograma, ActividadCronograma, EvidenciaActividad
+
 __all__ = [
     "Sedes", "User", "Publicacion", "Area", "Asignatura", "DocenteAsignatura",
     "Grado", "Grupo", "DocenteGrupo", "Estudiante", "Periodo",
     "Planeacion", "Comentario", "PlaneacionDestacada",
-    "Proyecto", "EvidenciaProyecto", "ComentarioProyecto", "Observador"
+    "Proyecto", "EvidenciaProyecto", "ComentarioProyecto", "Observador",
+    "Cronograma", "ActividadCronograma", "EvidenciaActividad"
 ]

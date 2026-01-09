@@ -46,3 +46,7 @@ get_refresh_token.py
 
 # Mac
 .DS_Store
+
+
+.opencode
+opencode.json

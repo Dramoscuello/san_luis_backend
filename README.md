@@ -506,112 +506,70 @@ CREATE TABLE comentarios_proyecto (
 #### 📅 **MÓDULO 3: CRONOGRAMAS INDIVIDUALES**
 
 ##### Tabla: `cronogramas`
-Cronograma anual de actividades de cada docente.
+Contenedor anual de actividades para cada docente.
 ```sql
 CREATE TABLE cronogramas (
     id SERIAL PRIMARY KEY,
     docente_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
-    titulo VARCHAR(255) NOT NULL,
+    titulo VARCHAR(255) NOT NULL,      -- Ej: "Cronograma 2025 - Juan Perez"
     descripcion TEXT,
-    anio_escolar INTEGER NOT NULL,              -- 2025, 2026, etc.
-    periodo VARCHAR(50),                        -- "Anual", "Semestral"
+    anio_escolar INTEGER NOT NULL,     -- Automático según año actual
+    estado VARCHAR(50) DEFAULT 'activo' CHECK (estado IN ('activo', 'archivado')),
     
-    drive_file_id VARCHAR(255) NOT NULL UNIQUE,
-    drive_view_link TEXT,
-    drive_embed_link TEXT,
-    drive_download_link TEXT,
-    nombre_archivo_original VARCHAR(255),
-    
-    total_actividades_estimadas INTEGER,       -- Para cálculo de cumplimiento
-    estado VARCHAR(50) DEFAULT 'activo' CHECK (estado IN ('activo', 'completado', 'archivado')),
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
-    CHECK (LENGTH(titulo) >= 5),
-    CHECK (anio_escolar >= 2020 AND anio_escolar <= 2100)
+    
+    UNIQUE(docente_id, anio_escolar)
 );
-
-CREATE UNIQUE INDEX idx_cronogramas_docente_anio_activo 
-ON cronogramas(docente_id, anio_escolar) WHERE estado = 'activo';
 ```
-**Constraint único:** Un docente solo puede tener un cronograma activo por año escolar  
 
-**Índices:** `idx_cronogramas_docente`, `idx_cronogramas_anio`, `idx_cronogramas_estado`, `idx_cronogramas_created`  
-
-##### Tabla: `evidencias_cronograma`
-Documentación de cumplimiento de actividades del cronograma.
+##### Tabla: `actividades_cronograma`
+Actividades específicas planificadas en el calendario.
 ```sql
-CREATE TABLE evidencias_cronograma (
+CREATE TABLE actividades_cronograma (
     id SERIAL PRIMARY KEY,
     cronograma_id INTEGER NOT NULL REFERENCES cronogramas(id) ON DELETE CASCADE,
-    titulo VARCHAR(255) NOT NULL,
+    
+    titulo VARCHAR(150) NOT NULL,      -- Ej: "Izada de Bandera"
     descripcion TEXT,
-    actividad_relacionada TEXT NOT NULL,        -- Qué actividad del cronograma evidencia
-    fecha_evidencia DATE NOT NULL,
+    fecha_programada DATE NOT NULL,
     
-    drive_file_id VARCHAR(255) NOT NULL UNIQUE,
-    drive_view_link TEXT,
-    drive_embed_link TEXT,
-    drive_download_link TEXT,
-    nombre_archivo_original VARCHAR(255),
-    tipo_archivo VARCHAR(20),
-    tamano_bytes INTEGER,
-    subido_por INTEGER REFERENCES usuarios(id),
+    estado VARCHAR(50) DEFAULT 'pendiente' 
+    CHECK (estado IN ('pendiente', 'completada', 'retrasada', 'cancelada')),
+    
     created_at TIMESTAMP DEFAULT NOW(),
-    CHECK (LENGTH(titulo) >= 5),
-    CHECK (LENGTH(actividad_relacionada) >= 5)
+    updated_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE INDEX idx_actividades_fecha ON actividades_cronograma(cronograma_id, fecha_programada);
 ```
 
-**Índices:** `idx_evidencias_cronograma_cronograma`, `idx_evidencias_cronograma_fecha`, `idx_evidencias_cronograma_tipo`, `idx_evidencias_cronograma_created`  
-
-##### Cálculo de Cumplimiento de Cronograma
-**Función PostgreSQL:**
+##### Tabla: `evidencias_actividad`
+Soportes que demuestran el cumplimiento de una actividad específica.
 ```sql
-CREATE OR REPLACE FUNCTION calcular_cumplimiento_cronograma(cronograma_id_param INTEGER)
-RETURNS DECIMAL AS $$
-DECLARE
-    total_actividades INTEGER;
-    total_evidencias INTEGER;
-    cumplimiento DECIMAL;
-BEGIN
-    SELECT c.total_actividades_estimadas, COUNT(ec.id)
-    INTO total_actividades, total_evidencias
-    FROM cronogramas c
-    LEFT JOIN evidencias_cronograma ec ON c.id = ec.cronograma_id
-    WHERE c.id = cronograma_id_param
-    GROUP BY c.id, c.total_actividades_estimadas;
-    
-    IF total_actividades IS NULL OR total_actividades = 0 THEN
-        total_actividades := 40;
-    END IF;
-    
-    cumplimiento := (total_evidencias::DECIMAL / total_actividades) * 100;
-    cumplimiento := LEAST(cumplimiento, 100);
-    
-    RETURN ROUND(cumplimiento, 2);
-END;
-$$ LANGUAGE plpgsql;
-```
-
-##### Tabla: `comentarios_cronograma`
-Retroalimentación sobre cronogramas o evidencias.
-```sql
-CREATE TABLE comentarios_cronograma (
+CREATE TABLE evidencias_actividad (
     id SERIAL PRIMARY KEY,
-    cronograma_id INTEGER REFERENCES cronogramas(id) ON DELETE CASCADE,
-    evidencia_id INTEGER REFERENCES evidencias_cronograma(id) ON DELETE CASCADE,
-    coordinador_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
-    contenido TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    CHECK (
-        (cronograma_id IS NOT NULL AND evidencia_id IS NULL) OR
-        (cronograma_id IS NULL AND evidencia_id IS NOT NULL)
-    ),
-    CHECK (LENGTH(contenido) >= 10)
+    actividad_id INTEGER NOT NULL REFERENCES actividades_cronograma(id) ON DELETE CASCADE,
+    
+    -- Google Drive
+    drive_file_id VARCHAR(255) NOT NULL,
+    drive_view_link TEXT,
+    drive_download_link TEXT,
+    
+    nombre_archivo VARCHAR(255),
+    tipo_archivo VARCHAR(50),
+    fecha_subida TIMESTAMP DEFAULT NOW(),
+    
+    comentario_docente TEXT
 );
 ```
 
-**Índices:** `idx_comentarios_cronograma_cronograma`, `idx_comentarios_cronograma_evidencia`, `idx_comentarios_cronograma_coordinador`, `idx_comentarios_cronograma_fecha`  
+##### Lógica de Negocio
+- **Creación:** El docente crea el cronograma (contenedor) una sola vez por año.
+- **Planificación:** El docente llena su calendario creando `actividades_cronograma`.
+- **Ejecución:** Al llegar la fecha, sube archivos a `evidencias_actividad`.
+- **Auditoría:** Coordinadores ven vista calendario (Verde=Cumplido, Rojo=Pendiente).
+- **Año Escolar:** Se asigna automáticamente al año en curso al crear.  
 
 ---
 
