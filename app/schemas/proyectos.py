@@ -72,10 +72,18 @@ class ProyectoListResponse(BaseModel):
     docente_id: int
     titulo: str
     descripcion: str
+    objetivos: Optional[str] = None
     fecha_inicio: date
     fecha_fin_estimada: Optional[date] = None
     estado: str
+    
+    # Documento adjunto (Google Drive)
+    drive_file_id: Optional[str] = None
+    drive_view_link: Optional[str] = None
+    drive_embed_link: Optional[str] = None
+    drive_download_link: Optional[str] = None
     nombre_archivo_original: Optional[str] = None
+    
     created_at: datetime
 
     # Relaciones
@@ -100,7 +108,7 @@ class EvidenciaProyectoResponse(BaseModel):
     proyecto_id: int
     titulo: str
     descripcion: Optional[str] = None
-    fecha_evidencia: date
+    fecha_evidencia: Optional[date] = None
 
     # Google Drive
     drive_file_id: str

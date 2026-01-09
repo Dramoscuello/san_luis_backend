@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.exc import IntegrityError
 from app.database.config import get_db
 from typing import Annotated, List
 from app.models.user import User as UserModel
@@ -67,14 +68,21 @@ def delete_sede(current_user: Annotated[UserModel, Depends(Auth.get_current_user
 
 @router.post("/", response_model=SedesResponse)
 def create_sede(current_user: Annotated[UserModel, Depends(Auth.get_current_user)], sede: Sedes, db: Session = Depends(get_db)):
+    try:
+        sede_new = sede.model_dump()
+        sede_new = SedesModel(**sede_new)
 
-    sede_new = sede.model_dump()
-    sede_new = SedesModel(**sede_new)
+        db.add(sede_new)
+        db.commit()
+        db.refresh(sede_new)
 
-    db.add(sede_new)
-    db.commit()
-    db.refresh(sede_new)
-
-    return sede_new
+        return sede_new
+    except IntegrityError as e:
+        db.rollback()
+        error_msg = str(e.orig)
+        if 'codigo' in error_msg:
+             raise HTTPException(status_code=400, detail="Ya existe una sede con este código.")
+        
+        raise HTTPException(status_code=400, detail="Error al crear la sede: Datos duplicados.")
 
 

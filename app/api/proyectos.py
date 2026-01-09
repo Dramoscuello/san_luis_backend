@@ -452,7 +452,7 @@ async def crear_evidencia(
     db: Session = Depends(get_db),
     archivo: UploadFile = File(..., description="Archivo de evidencia (obligatorio)"),
     titulo: str = Form(..., min_length=5, max_length=255, description="Título de la evidencia"),
-    fecha_evidencia: date = Form(..., description="Fecha del avance"),
+    fecha_evidencia: date = Form(None, description="Fecha del avance"),
     descripcion: Optional[str] = Form(None, description="Descripción de la evidencia"),
 ):
     """
@@ -460,7 +460,7 @@ async def crear_evidencia(
 
     - **archivo**: Archivo obligatorio (PDF, DOCX, imágenes, video, Excel)
     - **titulo**: Título de la evidencia (mínimo 5 caracteres)
-    - **fecha_evidencia**: Fecha del avance/hito
+    - **fecha_evidencia**: Fecha del avance/hito (Opcional, automática si no se envía)
     - **descripcion**: Descripción opcional
 
     Solo el docente dueño del proyecto puede agregar evidencias.
@@ -472,6 +472,10 @@ async def crear_evidencia(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Proyecto no encontrado",
         )
+
+    # Si no se envía fecha, usar la fecha actual
+    if not fecha_evidencia:
+        fecha_evidencia = date.today()
 
     # Validar que sea el dueño del proyecto
     if proyecto.docente_id != current_user.id:

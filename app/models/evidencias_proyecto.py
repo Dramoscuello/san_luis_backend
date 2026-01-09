@@ -18,7 +18,7 @@ class EvidenciaProyecto(Base):
 
     titulo = Column(String(255), nullable=False)
     descripcion = Column(Text, nullable=True)
-    fecha_evidencia = Column(Date, nullable=False)
+    fecha_evidencia = Column(Date, nullable=True)
 
     # Google Drive (obligatorio)
     drive_file_id = Column(String(255), nullable=False, unique=True)
