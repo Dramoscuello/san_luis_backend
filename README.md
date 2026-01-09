@@ -643,7 +643,9 @@ CREATE TABLE observadores (
     estudiante_id INTEGER NOT NULL REFERENCES estudiantes(id) ON DELETE CASCADE,
     docente_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     periodo INTEGER NOT NULL CHECK (periodo >= 1 AND periodo <= 4),
-    observacion TEXT,
+    fortalezas TEXT,
+    dificultades TEXT,
+    compromisos TEXT,
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW(),
     UNIQUE(estudiante_id, docente_id, periodo)

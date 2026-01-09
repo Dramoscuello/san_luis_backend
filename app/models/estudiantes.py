@@ -32,3 +32,4 @@ class Estudiante(Base):
 
     # Relaciones
     grupo = relationship("Grupo", back_populates="estudiantes")
+    observadores = relationship("Observador", back_populates="estudiante", cascade="all, delete-orphan")

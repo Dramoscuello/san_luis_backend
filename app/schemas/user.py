@@ -25,6 +25,23 @@ class User(BaseModel):
     created_at : datetime = datetime.now()
     updated_at : datetime = datetime.now()
 
+class GradoSimple(BaseModel):
+    id: int
+    nombre: str
+
+    class Config:
+        from_attributes = True
+
+
+class GrupoSimple(BaseModel):
+    id: int
+    nombre: str
+    grado: GradoSimple
+
+    class Config:
+        from_attributes = True
+
+
 class UserResponse(BaseModel):
     id: int
     email: str
@@ -35,6 +52,7 @@ class UserResponse(BaseModel):
     telefono: str
     sede_id: Optional[int] = None
     asignaturas: List[AsignaturaSimple] = []
+    grupos_a_cargo: List[GrupoSimple] = []
 
     class Config:
         from_attributes = True
