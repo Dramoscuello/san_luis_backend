@@ -105,7 +105,7 @@ def get_observadores_estudiante_actual(
     
     return observadores
 
-@router.get("/estudiante/{estudiante_id}/historial", response_model=List[ObservadorResponse])
+@router.get("/estudiante/{estudiante_id}/historial")
 def get_observadores_estudiante_historial(
     estudiante_id: int,
     current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
@@ -114,7 +114,10 @@ def get_observadores_estudiante_historial(
     """
     Obtener TODAS las observaciones históricas de un estudiante (todos los periodos).
     Uso: Generación de reportes PDF completos.
+    La edad se calcula dinámicamente a partir de la fecha de nacimiento.
     """
+    from datetime import date
+    
     observadores = db.query(ObservadorModel).options(
         joinedload(ObservadorModel.estudiante),
         joinedload(ObservadorModel.docente)
@@ -122,7 +125,64 @@ def get_observadores_estudiante_historial(
         ObservadorModel.estudiante_id == estudiante_id
     ).order_by(ObservadorModel.periodo.asc()).all()
     
-    return observadores
+    # Función para calcular edad
+    def calcular_edad(fecha_nacimiento):
+        if not fecha_nacimiento:
+            return None
+        hoy = date.today()
+        edad = hoy.year - fecha_nacimiento.year
+        if (hoy.month, hoy.day) < (fecha_nacimiento.month, fecha_nacimiento.day):
+            edad -= 1
+        return edad
+    
+    # Construir respuesta con edad calculada
+    resultado = []
+    for obs in observadores:
+        estudiante_data = None
+        if obs.estudiante:
+            estudiante_data = {
+                "id": obs.estudiante.id,
+                "nombres": obs.estudiante.nombres,
+                "apellidos": obs.estudiante.apellidos,
+                "numero_documento": obs.estudiante.numero_documento,
+                "edad": calcular_edad(obs.estudiante.fecha_nacimiento),
+                "fecha_nacimiento": obs.estudiante.fecha_nacimiento,
+                "lugar_nacimiento": obs.estudiante.lugar_nacimiento,
+                "tipo_documento": obs.estudiante.tipo_documento,
+                "rh": obs.estudiante.rh,
+                "eps": obs.estudiante.eps,
+                "nombre_padre": obs.estudiante.nombre_padre,
+                "ocupacion_padre": obs.estudiante.ocupacion_padre,
+                "celular_padre": obs.estudiante.celular_padre,
+                "nombre_madre": obs.estudiante.nombre_madre,
+                "ocupacion_madre": obs.estudiante.ocupacion_madre,
+                "celular_madre": obs.estudiante.celular_madre,
+                "nombre_acudiente": obs.estudiante.nombre_acudiente,
+                "celular_acudiente": obs.estudiante.celular_acudiente
+            }
+        
+        docente_data = None
+        if obs.docente:
+            docente_data = {
+                "id": obs.docente.id,
+                "nombre_completo": obs.docente.nombre_completo
+            }
+        
+        resultado.append({
+            "id": obs.id,
+            "periodo": obs.periodo,
+            "estudiante_id": obs.estudiante_id,
+            "docente_id": obs.docente_id,
+            "fortalezas": obs.fortalezas,
+            "dificultades": obs.dificultades,
+            "compromisos": obs.compromisos,
+            "created_at": obs.created_at,
+            "updated_at": obs.updated_at,
+            "estudiante": estudiante_data,
+            "docente": docente_data
+        })
+    
+    return resultado
 
 @router.put("/{id}", response_model=ObservadorResponse)
 def update_observador(

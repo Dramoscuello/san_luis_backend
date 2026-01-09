@@ -1,13 +1,35 @@
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional, List
 from pydantic import BaseModel, Field
 
 # --- Schemas Anidados Simples ---
-class EstudianteSimple(BaseModel):
+class EstudianteCompleto(BaseModel):
     id: int
     nombres: str
     apellidos: str
     numero_documento: str
+    
+    # Datos personales opcionales
+    edad: Optional[int] = None
+    fecha_nacimiento: Optional[date] = None
+    lugar_nacimiento: Optional[str] = None
+    tipo_documento: Optional[str] = None
+    rh: Optional[str] = None
+    eps: Optional[str] = None
+    
+    # Datos del padre
+    nombre_padre: Optional[str] = None
+    ocupacion_padre: Optional[str] = None
+    celular_padre: Optional[str] = None
+    
+    # Datos de la madre
+    nombre_madre: Optional[str] = None
+    ocupacion_madre: Optional[str] = None
+    celular_madre: Optional[str] = None
+    
+    # Datos del acudiente
+    nombre_acudiente: Optional[str] = None
+    celular_acudiente: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -41,7 +63,7 @@ class ObservadorResponse(ObservadorContent):
     created_at: datetime
     updated_at: datetime
     
-    estudiante: Optional[EstudianteSimple] = None
+    estudiante: Optional[EstudianteCompleto] = None
     docente: Optional[DocenteSimple] = None
 
     class Config:
