@@ -108,6 +108,38 @@ def get_directivos(current_user: Annotated[UserModel, Depends(Auth.get_current_u
     return resultado
 
 
+@router.get("/{docente_id}/grupos")
+def get_grupos_docente(
+    docente_id: int,
+    current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
+    db: Session = Depends(get_db)
+):
+    """
+    Obtener los grupos asignados a un docente específico.
+    Incluye información del grado al que pertenece cada grupo.
+    """
+    docente = db.query(UserModel).options(
+        joinedload(UserModel.grupos_a_cargo).joinedload(GrupoModel.grado)
+    ).filter(UserModel.id == docente_id).first()
+    
+    if not docente:
+        raise HTTPException(status_code=404, detail="Docente no encontrado")
+    
+    grupos = [
+        {
+            "id": grupo.id,
+            "nombre": grupo.nombre,
+            "grado": {
+                "id": grupo.grado.id if grupo.grado else None,
+                "nombre": grupo.grado.nombre if grupo.grado else None
+            }
+        }
+        for grupo in docente.grupos_a_cargo
+    ]
+    
+    return grupos
+
+
 @router.post("/change-password", status_code=200)
 def change_password(
     current_user: Annotated[UserModel, Depends(Auth.get_current_user)],
